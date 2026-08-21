@@ -10,6 +10,12 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: imoveis
+    description: Property operations
+  - name: avaliacoes
+    description: Review operations
 paths:
   /healthz:
     get:
@@ -24,6 +30,161 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get the current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Usuario"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out and invalidate the session
+      responses:
+        "204":
+          description: Logged out
+  /imoveis:
+    get:
+      operationId: listImoveis
+      tags: [imoveis]
+      summary: List properties with their reviews
+      responses:
+        "200":
+          description: List of properties
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Imovel"
+  /imoveis/{id}:
+    get:
+      operationId: getImovel
+      tags: [imoveis]
+      summary: Get a property with its reviews
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Property
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Imovel"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
+  /avaliacoes:
+    get:
+      operationId: listAvaliacoes
+      tags: [avaliacoes]
+      summary: List reviews, optionally filtered by property
+      parameters:
+        - name: imovelId
+          in: query
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Avaliacao"
+    post:
+      operationId: createAvaliacao
+      tags: [avaliacoes]
+      summary: Create a review (authenticated)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AvaliacaoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Avaliacao"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +194,118 @@ components:
           type: string
       required:
         - status
-
+    ApiErrorMessage:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        email:
+          type: string
+      required: [id, name, email]
+    RegisterInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 6
+      required: [name, email, password]
+    LoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 1
+      required: [email, password]
+    AuthSession:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/Usuario"
+      required: [token, user]
+    NotaCategoria:
+      type: object
+      properties:
+        nota:
+          type: number
+          minimum: 1
+          maximum: 5
+        comentario:
+          type: string
+      required: [nota]
+    AvaliacaoNotas:
+      type: object
+      properties:
+        apartamento:
+          $ref: "#/components/schemas/NotaCategoria"
+        condominio:
+          $ref: "#/components/schemas/NotaCategoria"
+        proprietario:
+          $ref: "#/components/schemas/NotaCategoria"
+        imobiliaria:
+          $ref: "#/components/schemas/NotaCategoria"
+    Avaliacao:
+      type: object
+      properties:
+        id:
+          type: number
+        imovelId:
+          type: number
+        userId:
+          type: number
+        userName:
+          type: string
+        data:
+          type: string
+          format: date-time
+        notas:
+          $ref: "#/components/schemas/AvaliacaoNotas"
+        oQueGostariaDeSaber:
+          type: string
+      required: [id, imovelId, userId, userName, data, notas, oQueGostariaDeSaber]
+    AvaliacaoInput:
+      type: object
+      properties:
+        imovelId:
+          type: number
+        notas:
+          $ref: "#/components/schemas/AvaliacaoNotas"
+        oQueGostariaDeSaber:
+          type: string
+          minLength: 20
+      required: [imovelId, notas, oQueGostariaDeSaber]
+    Imovel:
+      type: object
+      properties:
+        id:
+          type: number
+        nome:
+          type: string
+        endereco:
+          type: string
+        bairro:
+          type: string
+        cidade:
+          type: string
+        avaliacoes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Avaliacao"
+      required: [id, nome, endereco, bairro, cidade, avaliacoes]

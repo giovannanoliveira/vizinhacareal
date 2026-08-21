@@ -1,0 +1,1 @@
+- [Orval/zod codegen compatibility](orval-zod-compat.md) — avoid `type: integer` and `format: email` in openapi.yaml; orval emits zod-v4 calls that fail v3 typecheck.

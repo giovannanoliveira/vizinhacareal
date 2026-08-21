@@ -12,9 +12,11 @@ import {
 } from '@expo-google-fonts/inter';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { setBaseUrl } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ReviewProvider } from '@/contexts/ReviewContext';
+
+setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
 
 SplashScreen.preventAutoHideAsync();
 
@@ -57,9 +59,7 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <AuthProvider>
-                <ReviewProvider>
-                  <RootLayoutNav />
-                </ReviewProvider>
+                <RootLayoutNav />
               </AuthProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>

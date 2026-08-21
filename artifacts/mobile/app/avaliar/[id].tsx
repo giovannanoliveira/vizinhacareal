@@ -13,9 +13,16 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
-import { Avaliacao, CATEGORIAS, Categoria, NotaCategoria, getImovel } from '@/data/mock';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  getGetImovelQueryKey,
+  getListAvaliacoesQueryKey,
+  getListImoveisQueryKey,
+  useCreateAvaliacao,
+  useGetImovel,
+} from '@workspace/api-client-react';
+import { CATEGORIAS, Categoria, NotaCategoria } from '@/data/mock';
 import { useAuth } from '@/contexts/AuthContext';
-import { useReviews } from '@/contexts/ReviewContext';
 import { StarRating } from '@/components/StarRating';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 
@@ -33,9 +40,11 @@ export default function AvaliarScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { addReview } = useReviews();
+  const queryClient = useQueryClient();
 
-  const imovel = getImovel(id ?? '');
+  const imovelId = Number(id);
+  const { data: imovel } = useGetImovel(imovelId);
+  const createAvaliacao = useCreateAvaliacao();
 
   const [notas, setNotas] = useState<NotasState>({});
   const [oQueGostaria, setOQueGostaria] = useState('');
@@ -63,7 +72,7 @@ export default function AvaliarScreen() {
     Object.values(notas).some((n) => n && n.nota > 0) && oQueGostaria.trim().length >= 20;
 
   const handleSubmit = async () => {
-    if (!isValid || !user) return;
+    if (!isValid || !user || isSubmitting) return;
     setIsSubmitting(true);
 
     const cleanNotas: Partial<Record<Categoria, NotaCategoria>> = {};
@@ -72,20 +81,26 @@ export default function AvaliarScreen() {
       if (n && n.nota > 0) cleanNotas[key] = n;
     });
 
-    const review: Avaliacao = {
-      id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
-      imovelId: id ?? '',
-      userId: user.id,
-      userName: user.name,
-      data: new Date().toISOString(),
-      notas: cleanNotas,
-      oQueGostariaDeSaber: oQueGostaria.trim(),
-    };
-
-    await addReview(review);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setIsSubmitting(false);
-    router.back();
+    try {
+      await createAvaliacao.mutateAsync({
+        data: {
+          imovelId,
+          notas: cleanNotas,
+          oQueGostariaDeSaber: oQueGostaria.trim(),
+        },
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getGetImovelQueryKey(imovelId) }),
+        queryClient.invalidateQueries({ queryKey: getListImoveisQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getListAvaliacoesQueryKey() }),
+      ]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.back();
+    } catch {
+      Alert.alert('Erro', 'Não foi possível publicar a avaliação. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

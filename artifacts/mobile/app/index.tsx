@@ -12,9 +12,9 @@ import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useListImoveis } from '@workspace/api-client-react';
 import { useColors } from '@/hooks/useColors';
-import { IMOVEIS, Imovel, fuzzySearch, getMediaGeral } from '@/data/mock';
-import { useReviews } from '@/contexts/ReviewContext';
+import { Imovel, fuzzySearch } from '@/data/mock';
 import { SearchCard } from '@/components/SearchCard';
 
 const RECENTS_KEY = '@vizinhanca_recents';
@@ -23,7 +23,7 @@ const MAX_RECENTS = 5;
 export default function SearchScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { userReviews } = useReviews();
+  const { data: imoveis = [], isLoading } = useListImoveis();
   const [query, setQuery] = useState('');
   const [recentIds, setRecentIds] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
@@ -43,29 +43,27 @@ export default function SearchScreen() {
     [recentIds],
   );
 
-  const getExtraReviews = useCallback(
-    (imovelId: string) => userReviews.filter((r) => r.imovelId === imovelId),
-    [userReviews],
-  );
-
   const filteredResults = useMemo<Imovel[]>(() => {
-    if (!query.trim()) return IMOVEIS;
-    return fuzzySearch(query, IMOVEIS);
-  }, [query]);
+    if (!query.trim()) return imoveis;
+    return fuzzySearch(query, imoveis);
+  }, [query, imoveis]);
 
-  const showFuzzy = query.trim().length > 0 && filteredResults.length === 0;
+  const showFuzzy = query.trim().length > 0 && filteredResults.length === 0 && !isLoading;
   const topFuzzy = useMemo(() => {
     if (!showFuzzy) return [];
-    return fuzzySearch(query, IMOVEIS).slice(0, 3);
-  }, [showFuzzy, query]);
+    return fuzzySearch(query, imoveis).slice(0, 3);
+  }, [showFuzzy, query, imoveis]);
 
   const recentImoveis = useMemo(
-    () => recentIds.map((id) => IMOVEIS.find((i) => i.id === id)).filter(Boolean) as Imovel[],
-    [recentIds],
+    () =>
+      recentIds
+        .map((id) => imoveis.find((i) => String(i.id) === id))
+        .filter(Boolean) as Imovel[],
+    [recentIds, imoveis],
   );
 
   const handleSelect = (imovel: Imovel) => {
-    saveRecent(imovel.id);
+    saveRecent(String(imovel.id));
     router.push(`/imovel/${imovel.id}`);
   };
 
@@ -142,7 +140,7 @@ export default function SearchScreen() {
               onPress={() => handleSelect(imovel)}
               style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
             >
-              <SearchCard imovel={imovel} extraReviews={getExtraReviews(imovel.id)} />
+              <SearchCard imovel={imovel} />
             </Pressable>
           ))}
         </View>
@@ -150,20 +148,20 @@ export default function SearchScreen() {
     </View>
   );
 
-  const data = query ? filteredResults : recentImoveis.length > 0 ? recentImoveis : IMOVEIS;
+  const data = query ? filteredResults : recentImoveis.length > 0 ? recentImoveis : imoveis;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={showFuzzy ? [] : data}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.id)}
         ListHeaderComponent={renderHeader}
         renderItem={({ item }) => (
           <Pressable
             style={({ pressed }) => [styles.cardWrapper, { opacity: pressed ? 0.7 : 1 }]}
             onPress={() => handleSelect(item)}
           >
-            <SearchCard imovel={item} extraReviews={getExtraReviews(item.id)} />
+            <SearchCard imovel={item} />
           </Pressable>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
