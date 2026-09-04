@@ -30,6 +30,7 @@ function RootLayoutNav() {
       <Stack.Screen name="imovel/[id]" />
       <Stack.Screen name="avaliar/[id]" />
       <Stack.Screen name="comparar" />
+      <Stack.Screen name="assistente" />
       <Stack.Screen
         name="(auth)"
         options={{ presentation: 'modal', animation: 'slide_from_bottom' }}

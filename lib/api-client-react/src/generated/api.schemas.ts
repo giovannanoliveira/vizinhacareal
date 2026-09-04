@@ -96,6 +96,36 @@ export interface ComparacaoResponse {
   geradoPorIa: boolean;
 }
 
+export type AssistenteMensagemRole = typeof AssistenteMensagemRole[keyof typeof AssistenteMensagemRole];
+
+
+export const AssistenteMensagemRole = {
+  user: 'user',
+  assistant: 'assistant',
+} as const;
+
+export interface AssistenteMensagem {
+  role: AssistenteMensagemRole;
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  content: string;
+}
+
+export interface AssistenteChatInput {
+  /**
+     * @minItems 1
+     * @maxItems 12
+     */
+  messages: AssistenteMensagem[];
+}
+
+export interface AssistenteChatResponse {
+  resposta: string;
+  geradoPorIa: boolean;
+}
+
 export interface Imovel {
   id: number;
   nome: string;

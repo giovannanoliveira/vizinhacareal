@@ -329,3 +329,25 @@ export const CompareImoveisResponse = zod.object({
 })
 
 
+/**
+ * @summary Ask the Vizinhança Real assistant
+ */
+export const chatComAssistenteBodyMessagesItemContentMax = 2000;
+
+export const chatComAssistenteBodyMessagesMax = 12;
+
+
+
+export const ChatComAssistenteBody = zod.object({
+  "messages": zod.array(zod.object({
+  "role": zod.enum(['user', 'assistant']),
+  "content": zod.string().min(1).max(chatComAssistenteBodyMessagesItemContentMax)
+})).min(1).max(chatComAssistenteBodyMessagesMax)
+})
+
+export const ChatComAssistenteResponse = zod.object({
+  "resposta": zod.string(),
+  "geradoPorIa": zod.boolean()
+})
+
+

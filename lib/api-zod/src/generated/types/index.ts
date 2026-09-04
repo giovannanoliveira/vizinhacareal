@@ -7,6 +7,10 @@
  */
 
 export * from './apiErrorMessage';
+export * from './assistenteChatInput';
+export * from './assistenteChatResponse';
+export * from './assistenteMensagem';
+export * from './assistenteMensagemRole';
 export * from './authSession';
 export * from './avaliacao';
 export * from './avaliacaoInput';

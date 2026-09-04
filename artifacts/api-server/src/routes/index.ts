@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import imoveisRouter from "./imoveis";
 import avaliacoesRouter from "./avaliacoes";
 import comparacoesRouter from "./comparacoes";
+import assistenteRouter from "./assistente";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(authRouter);
 router.use(imoveisRouter);
 router.use(avaliacoesRouter);
 router.use(comparacoesRouter);
+router.use(assistenteRouter);
 
 export default router;
