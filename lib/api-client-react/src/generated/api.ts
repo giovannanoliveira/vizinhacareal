@@ -21,6 +21,8 @@ import type {
 
 import type {
   ApiErrorMessage,
+  AssistenteChatInput,
+  AssistenteChatResponse,
   AuthSession,
   Avaliacao,
   AvaliacaoInput,
@@ -807,5 +809,76 @@ export const useCompareImoveis = <TError = ErrorType<ApiErrorMessage>,
         TContext
       > => {
       return useMutation(getCompareImoveisMutationOptions(options));
+    }
+
+export const getChatComAssistenteUrl = () => {
+
+
+
+
+  return `/api/assistente/chat`
+}
+
+/**
+ * @summary Ask the Vizinhança Real assistant
+ */
+export const chatComAssistente = async (assistenteChatInput: AssistenteChatInput, options?: Parameters<typeof customFetch>[1]): Promise<AssistenteChatResponse> => {
+
+  return customFetch<AssistenteChatResponse>(getChatComAssistenteUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(assistenteChatInput)
+  }
+);}
+
+
+
+
+
+export const getChatComAssistenteMutationOptions = <TError = ErrorType<ApiErrorMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chatComAssistente>>, TError,{data: BodyType<AssistenteChatInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof chatComAssistente>>, TError,{data: BodyType<AssistenteChatInput>}, TContext> => {
+
+const mutationKey = ['chatComAssistente'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof chatComAssistente>>, {data: BodyType<AssistenteChatInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  chatComAssistente(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChatComAssistenteMutationResult = NonNullable<Awaited<ReturnType<typeof chatComAssistente>>>
+    export type ChatComAssistenteMutationBody = BodyType<AssistenteChatInput>
+    export type ChatComAssistenteMutationError = ErrorType<ApiErrorMessage>
+
+    /**
+ * @summary Ask the Vizinhança Real assistant
+ */
+export const useChatComAssistente = <TError = ErrorType<ApiErrorMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof chatComAssistente>>, TError,{data: BodyType<AssistenteChatInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof chatComAssistente>>,
+        TError,
+        {data: BodyType<AssistenteChatInput>},
+        TContext
+      > => {
+      return useMutation(getChatComAssistenteMutationOptions(options));
     }
 

@@ -220,11 +220,29 @@ export default function SearchScreen() {
           </Pressable>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-        contentContainerStyle={[styles.list, { paddingBottom: botPad + 24 }]}
+        contentContainerStyle={[styles.list, { paddingBottom: botPad + 104 }]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         scrollEnabled
       />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Abrir assistente"
+        onPress={() => router.push('/assistente')}
+        style={({ pressed }) => [
+          styles.assistantButton,
+          {
+            bottom: botPad + 18,
+            backgroundColor: colors.primary,
+            opacity: pressed ? 0.8 : 1,
+          },
+        ]}
+      >
+        <Feather name="message-circle" size={22} color={colors.primaryForeground} />
+        <Text style={[styles.assistantLabel, { color: colors.primaryForeground }]}>
+          Pergunte
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -278,6 +296,22 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardWrapper: {},
+  assistantButton: {
+    position: 'absolute',
+    right: 20,
+    height: 52,
+    borderRadius: 26,
+    paddingHorizontal: 17,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  assistantLabel: { fontSize: 13, fontFamily: 'Inter_600SemiBold' },
   compareBanner: {
     minHeight: 72,
     padding: 13,
