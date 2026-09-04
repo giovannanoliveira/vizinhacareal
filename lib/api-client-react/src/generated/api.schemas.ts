@@ -71,6 +71,31 @@ export interface AvaliacaoInput {
   oQueGostariaDeSaber: string;
 }
 
+export interface ComparacaoInput {
+  /**
+     * @minItems 2
+     * @maxItems 4
+     */
+  imovelIds: number[];
+}
+
+export interface ComparacaoImovel {
+  id: number;
+  nome: string;
+  endereco: string;
+  mediaGeral: number;
+  totalAvaliacoes: number;
+  pontosPositivos: string[];
+  pontosNegativos: string[];
+}
+
+export interface ComparacaoResponse {
+  imoveis: ComparacaoImovel[];
+  visaoGeral: string;
+  recomendacao: string;
+  geradoPorIa: boolean;
+}
+
 export interface Imovel {
   id: number;
   nome: string;

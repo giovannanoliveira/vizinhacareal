@@ -301,3 +301,31 @@ export const CreateAvaliacaoResponse = zod.object({
 })
 
 
+/**
+ * @summary Compare selected properties using reviews and AI
+ */
+export const compareImoveisBodyImovelIdsMin = 2;
+export const compareImoveisBodyImovelIdsMax = 4;
+
+
+
+export const CompareImoveisBody = zod.object({
+  "imovelIds": zod.array(zod.number()).min(compareImoveisBodyImovelIdsMin).max(compareImoveisBodyImovelIdsMax)
+})
+
+export const CompareImoveisResponse = zod.object({
+  "imoveis": zod.array(zod.object({
+  "id": zod.number(),
+  "nome": zod.string(),
+  "endereco": zod.string(),
+  "mediaGeral": zod.number(),
+  "totalAvaliacoes": zod.number(),
+  "pontosPositivos": zod.array(zod.string()),
+  "pontosNegativos": zod.array(zod.string())
+})),
+  "visaoGeral": zod.string(),
+  "recomendacao": zod.string(),
+  "geradoPorIa": zod.boolean()
+})
+
+

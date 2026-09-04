@@ -16,6 +16,8 @@ tags:
     description: Property operations
   - name: avaliacoes
     description: Review operations
+  - name: comparacoes
+    description: Property comparison operations
 paths:
   /healthz:
     get:
@@ -185,6 +187,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorMessage"
+  /comparacoes:
+    post:
+      operationId: compareImoveis
+      tags: [comparacoes]
+      summary: Compare selected properties using reviews and AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComparacaoInput"
+      responses:
+        "200":
+          description: Comparative overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComparacaoResponse"
+        "400":
+          description: Invalid property selection
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
+        "404":
+          description: One or more properties were not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
 components:
   schemas:
     HealthStatus:
@@ -291,6 +323,54 @@ components:
           type: string
           minLength: 20
       required: [imovelId, notas, oQueGostariaDeSaber]
+    ComparacaoInput:
+      type: object
+      properties:
+        imovelIds:
+          type: array
+          minItems: 2
+          maxItems: 4
+          uniqueItems: true
+          items:
+            type: number
+      required: [imovelIds]
+    ComparacaoImovel:
+      type: object
+      properties:
+        id:
+          type: number
+        nome:
+          type: string
+        endereco:
+          type: string
+        mediaGeral:
+          type: number
+        totalAvaliacoes:
+          type: number
+        pontosPositivos:
+          type: array
+          items:
+            type: string
+        pontosNegativos:
+          type: array
+          items:
+            type: string
+      required:
+        [id, nome, endereco, mediaGeral, totalAvaliacoes, pontosPositivos, pontosNegativos]
+    ComparacaoResponse:
+      type: object
+      properties:
+        imoveis:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComparacaoImovel"
+        visaoGeral:
+          type: string
+        recomendacao:
+          type: string
+        geradoPorIa:
+          type: boolean
+      required: [imoveis, visaoGeral, recomendacao, geradoPorIa]
     Imovel:
       type: object
       properties:

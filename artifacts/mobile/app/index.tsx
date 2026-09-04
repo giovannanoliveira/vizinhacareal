@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
+  Alert,
   Platform,
   Pressable,
   StyleSheet,
@@ -16,6 +17,7 @@ import { useListImoveis } from '@workspace/api-client-react';
 import { useColors } from '@/hooks/useColors';
 import { Imovel, fuzzySearch } from '@/data/mock';
 import { SearchCard } from '@/components/SearchCard';
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 const RECENTS_KEY = '@vizinhanca_recents';
 const MAX_RECENTS = 5;
@@ -27,6 +29,7 @@ export default function SearchScreen() {
   const [query, setQuery] = useState('');
   const [recentIds, setRecentIds] = useState<string[]>([]);
   const inputRef = useRef<TextInput>(null);
+  const { favoriteIds, isFavorite, toggleFavorite } = useFavorites();
 
   useEffect(() => {
     AsyncStorage.getItem(RECENTS_KEY).then((val) => {
@@ -65,6 +68,16 @@ export default function SearchScreen() {
   const handleSelect = (imovel: Imovel) => {
     saveRecent(String(imovel.id));
     router.push(`/imovel/${imovel.id}`);
+  };
+
+  const handleToggleFavorite = async (id: number) => {
+    const result = await toggleFavorite(id);
+    if (result === 'limit') {
+      Alert.alert(
+        'Limite da comparação',
+        'Você pode comparar até 4 imóveis por vez. Remova um coração para escolher outro.',
+      );
+    }
   };
 
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
@@ -108,6 +121,40 @@ export default function SearchScreen() {
         )}
       </View>
 
+      {favoriteIds.length > 0 && (
+        <Pressable
+          disabled={favoriteIds.length < 2}
+          onPress={() => router.push('/comparar')}
+          style={({ pressed }) => [
+            styles.compareBanner,
+            {
+              backgroundColor: colors.accent,
+              borderRadius: colors.radius,
+              opacity: pressed ? 0.75 : 1,
+            },
+          ]}
+        >
+          <View style={[styles.compareIcon, { backgroundColor: colors.card }]}>
+            <Feather name="heart" size={17} color={colors.primary} />
+          </View>
+          <View style={styles.compareCopy}>
+            <Text style={[styles.compareTitle, { color: colors.primary }]}>
+              {favoriteIds.length < 2
+                ? 'Escolha mais 1 imóvel'
+                : `Comparar ${favoriteIds.length} imóveis`}
+            </Text>
+            <Text style={[styles.compareSubtitle, { color: colors.mutedForeground }]}>
+              Veja os pontos positivos e negativos lado a lado
+            </Text>
+          </View>
+          <Feather
+            name={favoriteIds.length < 2 ? 'plus' : 'arrow-right'}
+            size={18}
+            color={colors.primary}
+          />
+        </Pressable>
+      )}
+
       {/* Section title */}
       {!query && recentImoveis.length > 0 && (
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
@@ -140,7 +187,11 @@ export default function SearchScreen() {
               onPress={() => handleSelect(imovel)}
               style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]}
             >
-              <SearchCard imovel={imovel} />
+              <SearchCard
+                imovel={imovel}
+                isFavorite={isFavorite(Number(imovel.id))}
+                onToggleFavorite={() => handleToggleFavorite(Number(imovel.id))}
+              />
             </Pressable>
           ))}
         </View>
@@ -161,7 +212,11 @@ export default function SearchScreen() {
             style={({ pressed }) => [styles.cardWrapper, { opacity: pressed ? 0.7 : 1 }]}
             onPress={() => handleSelect(item)}
           >
-            <SearchCard imovel={item} />
+            <SearchCard
+              imovel={item}
+              isFavorite={isFavorite(Number(item.id))}
+              onToggleFavorite={() => handleToggleFavorite(Number(item.id))}
+            />
           </Pressable>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
@@ -223,6 +278,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardWrapper: {},
+  compareBanner: {
+    minHeight: 72,
+    padding: 13,
+    marginBottom: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+  },
+  compareIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  compareCopy: { flex: 1, gap: 2 },
+  compareTitle: { fontSize: 14, fontFamily: 'Inter_600SemiBold' },
+  compareSubtitle: { fontSize: 11, lineHeight: 16, fontFamily: 'Inter_400Regular' },
   fuzzyState: {
     gap: 10,
     marginTop: 8,

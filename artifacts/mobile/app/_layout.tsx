@@ -15,6 +15,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { setBaseUrl } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { FavoritesProvider } from '@/contexts/FavoritesContext';
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
 
@@ -28,6 +29,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="imovel/[id]" />
       <Stack.Screen name="avaliar/[id]" />
+      <Stack.Screen name="comparar" />
       <Stack.Screen
         name="(auth)"
         options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
@@ -61,7 +63,9 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <AuthProvider>
-                <RootLayoutNav />
+                <FavoritesProvider>
+                  <RootLayoutNav />
+                </FavoritesProvider>
               </AuthProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>

@@ -24,6 +24,8 @@ import type {
   AuthSession,
   Avaliacao,
   AvaliacaoInput,
+  ComparacaoInput,
+  ComparacaoResponse,
   HealthStatus,
   Imovel,
   ListAvaliacoesParams,
@@ -734,5 +736,76 @@ export const useCreateAvaliacao = <TError = ErrorType<ApiErrorMessage>,
         TContext
       > => {
       return useMutation(getCreateAvaliacaoMutationOptions(options));
+    }
+
+export const getCompareImoveisUrl = () => {
+
+
+
+
+  return `/api/comparacoes`
+}
+
+/**
+ * @summary Compare selected properties using reviews and AI
+ */
+export const compareImoveis = async (comparacaoInput: ComparacaoInput, options?: Parameters<typeof customFetch>[1]): Promise<ComparacaoResponse> => {
+
+  return customFetch<ComparacaoResponse>(getCompareImoveisUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(comparacaoInput)
+  }
+);}
+
+
+
+
+
+export const getCompareImoveisMutationOptions = <TError = ErrorType<ApiErrorMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof compareImoveis>>, TError,{data: BodyType<ComparacaoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof compareImoveis>>, TError,{data: BodyType<ComparacaoInput>}, TContext> => {
+
+const mutationKey = ['compareImoveis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof compareImoveis>>, {data: BodyType<ComparacaoInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  compareImoveis(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompareImoveisMutationResult = NonNullable<Awaited<ReturnType<typeof compareImoveis>>>
+    export type CompareImoveisMutationBody = BodyType<ComparacaoInput>
+    export type CompareImoveisMutationError = ErrorType<ApiErrorMessage>
+
+    /**
+ * @summary Compare selected properties using reviews and AI
+ */
+export const useCompareImoveis = <TError = ErrorType<ApiErrorMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof compareImoveis>>, TError,{data: BodyType<ComparacaoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof compareImoveis>>,
+        TError,
+        {data: BodyType<ComparacaoInput>},
+        TContext
+      > => {
+      return useMutation(getCompareImoveisMutationOptions(options));
     }
 
