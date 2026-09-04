@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useColors } from '@/hooks/useColors';
 import { Avaliacao, Imovel, getMediaGeral } from '@/data/mock';
@@ -8,9 +8,16 @@ import { StarRating } from './StarRating';
 interface SearchCardProps {
   imovel: Imovel;
   extraReviews?: Avaliacao[];
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
-export function SearchCard({ imovel, extraReviews = [] }: SearchCardProps) {
+export function SearchCard({
+  imovel,
+  extraReviews = [],
+  isFavorite = false,
+  onToggleFavorite,
+}: SearchCardProps) {
   const colors = useColors();
   const allReviews = [...imovel.avaliacoes, ...extraReviews];
   const media = getMediaGeral(allReviews);
@@ -55,7 +62,28 @@ export function SearchCard({ imovel, extraReviews = [] }: SearchCardProps) {
         )}
       </View>
 
-      <Feather name="chevron-right" size={16} color={colors.border} />
+      <View style={styles.actions}>
+        {onToggleFavorite && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={isFavorite ? 'Remover da comparação' : 'Adicionar à comparação'}
+            hitSlop={8}
+            onPress={(event) => {
+              event.stopPropagation();
+              onToggleFavorite();
+            }}
+            style={({ pressed }) => ({ opacity: pressed ? 0.55 : 1 })}
+          >
+            <Feather
+              name="heart"
+              size={20}
+              color={isFavorite ? colors.lowScore : colors.mutedForeground}
+              fill={isFavorite ? colors.lowScore : 'transparent'}
+            />
+          </Pressable>
+        )}
+        <Feather name="chevron-right" size={16} color={colors.border} />
+      </View>
     </View>
   );
 }
@@ -104,5 +132,9 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontFamily: 'Inter_400Regular',
     marginTop: 2,
+  },
+  actions: {
+    alignItems: 'center',
+    gap: 12,
   },
 });

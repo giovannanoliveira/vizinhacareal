@@ -13,9 +13,9 @@ export interface NotaCategoria {
 }
 
 export interface Avaliacao {
-  id: string;
-  imovelId: string;
-  userId: string;
+  id: string | number;
+  imovelId: string | number;
+  userId: string | number;
   userName: string;
   data: string; // ISO date string
   notas: Partial<Record<Categoria, NotaCategoria>>;
@@ -23,7 +23,7 @@ export interface Avaliacao {
 }
 
 export interface Imovel {
-  id: string;
+  id: string | number;
   nome: string;
   endereco: string;
   bairro: string;

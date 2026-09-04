@@ -4,17 +4,20 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
   useFonts,
-} from '@expo-google-fonts/inter';
+} from '@expo-google-fonts/poppins';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { setBaseUrl } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { ReviewProvider } from '@/contexts/ReviewContext';
+import { FavoritesProvider } from '@/contexts/FavoritesContext';
+
+setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,6 +29,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="imovel/[id]" />
       <Stack.Screen name="avaliar/[id]" />
+      <Stack.Screen name="comparar" />
       <Stack.Screen
         name="(auth)"
         options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
@@ -36,10 +40,12 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
+    // Keep the existing typography tokens stable while swapping the
+    // rendered family globally from Inter to Poppins.
+    Inter_400Regular: Poppins_400Regular,
+    Inter_500Medium: Poppins_500Medium,
+    Inter_600SemiBold: Poppins_600SemiBold,
+    Inter_700Bold: Poppins_700Bold,
   });
 
   useEffect(() => {
@@ -57,9 +63,9 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <AuthProvider>
-                <ReviewProvider>
+                <FavoritesProvider>
                   <RootLayoutNav />
-                </ReviewProvider>
+                </FavoritesProvider>
               </AuthProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>

@@ -14,17 +14,15 @@ import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
+import { useGetImovel } from '@workspace/api-client-react';
 import {
   Avaliacao,
   CATEGORIAS,
   Categoria,
-  Imovel,
-  getImovel,
   getMediaCategoria,
   getMediaGeral,
 } from '@/data/mock';
 import { useAuth } from '@/contexts/AuthContext';
-import { useReviews } from '@/contexts/ReviewContext';
 import { ReviewCard } from '@/components/ReviewCard';
 import { StarRating } from '@/components/StarRating';
 
@@ -98,19 +96,12 @@ export default function ImovelScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { userReviews } = useReviews();
   const [filterCategory, setFilterCategory] = useState<Categoria | 'todas'>('todas');
   const [showFilter, setShowFilter] = useState(false);
 
-  const imovel = useMemo(() => getImovel(id ?? ''), [id]);
-  const extraReviews = useMemo(
-    () => userReviews.filter((r) => r.imovelId === id),
-    [userReviews, id],
-  );
-  const allReviews: Avaliacao[] = useMemo(
-    () => [...(imovel?.avaliacoes ?? []), ...extraReviews],
-    [imovel, extraReviews],
-  );
+  const imovelId = Number(id);
+  const { data: imovel, isLoading } = useGetImovel(imovelId);
+  const allReviews: Avaliacao[] = useMemo(() => imovel?.avaliacoes ?? [], [imovel]);
 
   const displayedReviews = useMemo(() => {
     if (filterCategory === 'todas') return allReviews;
@@ -130,7 +121,7 @@ export default function ImovelScreen() {
         </View>
         <View style={styles.centered}>
           <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
-            Imóvel não encontrado.
+            {isLoading ? 'Carregando…' : 'Imóvel não encontrado.'}
           </Text>
         </View>
       </View>
@@ -261,7 +252,7 @@ export default function ImovelScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
         data={displayedReviews}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.id)}
         ListHeaderComponent={renderHeader}
         renderItem={({ item }) => (
           <View style={styles.reviewItem}>

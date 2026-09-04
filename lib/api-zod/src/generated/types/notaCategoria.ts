@@ -6,6 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface NotaCategoria {
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  nota: number;
+  comentario?: string;
 }

@@ -1,13 +1,20 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  getMe,
+  login as apiLogin,
+  logout as apiLogout,
+  register as apiRegister,
+  setAuthTokenGetter,
+  type Usuario,
+} from '@workspace/api-client-react';
 
-const AUTH_KEY = '@vizinhanca_user';
+const TOKEN_KEY = '@vizinhanca_token';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-}
+let currentToken: string | null = null;
+setAuthTokenGetter(() => currentToken);
+
+export type User = Usuario;
 
 interface AuthContextType {
   user: User | null;
@@ -24,35 +31,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(AUTH_KEY)
-      .then((value) => {
-        if (value) setUser(JSON.parse(value) as User);
-      })
-      .finally(() => setIsLoading(false));
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem(TOKEN_KEY);
+        if (token) {
+          currentToken = token;
+          const me = await getMe();
+          setUser(me);
+        }
+      } catch {
+        // Session expired or unreachable — clear the stale token.
+        currentToken = null;
+        await AsyncStorage.removeItem(TOKEN_KEY);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, []);
 
-  const login = useCallback(async (email: string, _password: string) => {
-    const newUser: User = {
-      id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
-      name: email.split('@')[0] ?? email,
-      email,
-    };
-    await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
-    setUser(newUser);
+  const login = useCallback(async (email: string, password: string) => {
+    const session = await apiLogin({ email: email.trim(), password });
+    currentToken = session.token;
+    await AsyncStorage.setItem(TOKEN_KEY, session.token);
+    setUser(session.user);
   }, []);
 
-  const register = useCallback(async (name: string, email: string, _password: string) => {
-    const newUser: User = {
-      id: Date.now().toString() + Math.random().toString(36).substring(2, 7),
-      name,
-      email,
-    };
-    await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(newUser));
-    setUser(newUser);
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    const session = await apiRegister({ name, email: email.trim(), password });
+    currentToken = session.token;
+    await AsyncStorage.setItem(TOKEN_KEY, session.token);
+    setUser(session.user);
   }, []);
 
   const logout = useCallback(async () => {
-    await AsyncStorage.removeItem(AUTH_KEY);
+    try {
+      await apiLogout();
+    } catch {
+      // Ignore network errors — clear local state regardless.
+    }
+    currentToken = null;
+    await AsyncStorage.removeItem(TOKEN_KEY);
     setUser(null);
   }, []);
 
