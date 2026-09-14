@@ -37,6 +37,9 @@ const colors = {
     destructive: '#D9534F',
     destructiveForeground: '#FFFFFF',
 
+    // Provider brand color
+    googleBlue: '#4285F4',
+
     // Borders and inputs
     border: '#E3DDCF',
     input: '#E3DDCF',

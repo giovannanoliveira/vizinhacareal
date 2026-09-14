@@ -88,9 +88,11 @@ router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/auth/logout", requireAuth, async (req, res): Promise<void> => {
-  await db
-    .delete(sessoesTable)
-    .where(eq(sessoesTable.token, req.sessionToken!));
+  if (req.sessionToken) {
+    await db
+      .delete(sessoesTable)
+      .where(eq(sessoesTable.token, req.sessionToken));
+  }
   res.sendStatus(204);
 });
 
