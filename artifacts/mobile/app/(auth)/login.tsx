@@ -43,22 +43,14 @@ export default function LoginScreen() {
     try {
       const { createdSessionId, setActive } = await startSSOFlow({
         strategy: 'oauth_google',
-        redirectUrl: AuthSession.makeRedirectUri({ scheme: 'mobile', path: 'oauth-callback' }),
+        redirectUrl: AuthSession.makeRedirectUri({ scheme: 'mobile' }),
       });
       if (!createdSessionId || !setActive) {
         setError('Não foi possível concluir o cadastro com o Google.');
         return;
       }
-      await setActive({
-        session: createdSessionId,
-        navigate: async ({ session }) => {
-          if (session?.currentTask) {
-            setError('Sua conta precisa de uma confirmação adicional.');
-            return;
-          }
-          router.dismissAll();
-        },
-      });
+      await setActive({ session: createdSessionId });
+      router.replace('/');
     } catch {
       setError('O acesso com Google foi cancelado ou não pôde ser concluído.');
     } finally {
