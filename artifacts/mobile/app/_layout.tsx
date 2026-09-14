@@ -10,13 +10,13 @@ import {
   Poppins_700Bold,
   useFonts,
 } from '@expo-google-fonts/poppins';
-import { Stack } from 'expo-router';
+import { Redirect, router, Stack, useRootNavigationState, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { setBaseUrl } from '@workspace/api-client-react';
 import { ClerkLoaded, ClerkProvider } from '@clerk/expo';
 import { tokenCache } from '@clerk/expo/token-cache';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { AuthProvider } from '@/contexts/AuthContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
@@ -28,8 +28,30 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
+  const { user, isLoading } = useAuth();
+  const segments = useSegments();
+  const navigationState = useRootNavigationState();
+  const inAuthGroup = segments[0] === '(auth)';
+
+  useEffect(() => {
+    if (isLoading || !navigationState?.key) return;
+
+    if (!user && !inAuthGroup) {
+      router.replace('/(auth)/login');
+    } else if (user && inAuthGroup) {
+      router.replace('/');
+    }
+  }, [inAuthGroup, isLoading, navigationState?.key, user]);
+
+  if (!isLoading && !user && !inAuthGroup && navigationState?.key) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
-    <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+    <Stack
+      initialRouteName="(auth)"
+      screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
+    >
       <Stack.Screen name="index" />
       <Stack.Screen name="imovel/[id]" />
       <Stack.Screen name="avaliar/[id]" />
@@ -37,7 +59,7 @@ function RootLayoutNav() {
       <Stack.Screen name="assistente" />
       <Stack.Screen
         name="(auth)"
-        options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+        options={{ animation: 'fade' }}
       />
     </Stack>
   );
