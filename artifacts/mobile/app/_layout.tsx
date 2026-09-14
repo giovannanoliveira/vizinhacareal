@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,7 +11,7 @@ import {
   Poppins_700Bold,
   useFonts,
 } from '@expo-google-fonts/poppins';
-import { Redirect, router, Stack, useRootNavigationState, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { setBaseUrl } from '@workspace/api-client-react';
 import { ClerkLoaded, ClerkProvider } from '@clerk/expo';
@@ -18,6 +19,7 @@ import { tokenCache } from '@clerk/expo/token-cache';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
+import { useColors } from '@/hooks/useColors';
 
 setBaseUrl(`https://${process.env.EXPO_PUBLIC_DOMAIN}`);
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
@@ -29,39 +31,36 @@ const queryClient = new QueryClient();
 
 function RootLayoutNav() {
   const { user, isLoading } = useAuth();
-  const segments = useSegments();
-  const navigationState = useRootNavigationState();
-  const inAuthGroup = segments[0] === '(auth)';
+  const colors = useColors();
 
-  useEffect(() => {
-    if (isLoading || !navigationState?.key) return;
-
-    if (!user && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      router.replace('/');
-    }
-  }, [inAuthGroup, isLoading, navigationState?.key, user]);
-
-  if (!isLoading && !user && !inAuthGroup && navigationState?.key) {
-    return <Redirect href="/(auth)/login" />;
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.background,
+        }}
+      >
+        <ActivityIndicator color={colors.primary} />
+      </View>
+    );
   }
 
   return (
-    <Stack
-      initialRouteName="(auth)"
-      screenOptions={{ headerShown: false, animation: 'slide_from_right' }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="imovel/[id]" />
-      <Stack.Screen name="avaliar/[id]" />
-      <Stack.Screen name="comparar" />
-      <Stack.Screen name="assistente" />
-      <Stack.Screen name="planos" />
-      <Stack.Screen
-        name="(auth)"
-        options={{ animation: 'fade' }}
-      />
+    <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
+      <Stack.Protected guard={!user}>
+        <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
+      </Stack.Protected>
+      <Stack.Protected guard={Boolean(user)}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="imovel/[id]" />
+        <Stack.Screen name="avaliar/[id]" />
+        <Stack.Screen name="comparar" />
+        <Stack.Screen name="assistente" />
+        <Stack.Screen name="planos" />
+      </Stack.Protected>
     </Stack>
   );
 }
