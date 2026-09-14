@@ -1,81 +1,59 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth as useClerkAuth, useClerk } from '@clerk/expo';
 import {
   getMe,
-  login as apiLogin,
-  logout as apiLogout,
-  register as apiRegister,
   setAuthTokenGetter,
   type Usuario,
 } from '@workspace/api-client-react';
-
-const TOKEN_KEY = '@vizinhanca_token';
-
-let currentToken: string | null = null;
-setAuthTokenGetter(() => currentToken);
 
 export type User = Usuario;
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { isLoaded, isSignedIn, getToken } = useClerkAuth();
+  const { signOut } = useClerk();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const token = await AsyncStorage.getItem(TOKEN_KEY);
-        if (token) {
-          currentToken = token;
-          const me = await getMe();
-          setUser(me);
-        }
-      } catch {
-        // Session expired or unreachable — clear the stale token.
-        currentToken = null;
-        await AsyncStorage.removeItem(TOKEN_KEY);
-      } finally {
-        setIsLoading(false);
-      }
-    })();
-  }, []);
+    setAuthTokenGetter(() => getToken());
+  }, [getToken]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const session = await apiLogin({ email: email.trim(), password });
-    currentToken = session.token;
-    await AsyncStorage.setItem(TOKEN_KEY, session.token);
-    setUser(session.user);
-  }, []);
+  const refreshUser = useCallback(async () => {
+    if (!isSignedIn) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      setUser(await getMe());
+    } catch {
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isSignedIn]);
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    const session = await apiRegister({ name, email: email.trim(), password });
-    currentToken = session.token;
-    await AsyncStorage.setItem(TOKEN_KEY, session.token);
-    setUser(session.user);
-  }, []);
+  useEffect(() => {
+    if (isLoaded) void refreshUser();
+  }, [isLoaded, refreshUser]);
 
   const logout = useCallback(async () => {
-    try {
-      await apiLogout();
-    } catch {
-      // Ignore network errors — clear local state regardless.
-    }
-    currentToken = null;
-    await AsyncStorage.removeItem(TOKEN_KEY);
+    await signOut();
     setUser(null);
-  }, []);
+  }, [signOut]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );
