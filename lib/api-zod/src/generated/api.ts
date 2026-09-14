@@ -351,3 +351,21 @@ export const ChatComAssistenteResponse = zod.object({
 })
 
 
+/**
+ * @summary Create an authenticated Stripe Checkout for the Premium plan
+ */
+export const CreatePremiumCheckoutResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
+ * @summary Get the authenticated user's latest Premium payment status
+ */
+export const GetPremiumStatusResponse = zod.object({
+  "status": zod.enum(['none', 'open', 'complete', 'expired']),
+  "paymentStatus": zod.enum(['unpaid', 'paid', 'no_payment_required']),
+  "isPremium": zod.boolean()
+})
+
+

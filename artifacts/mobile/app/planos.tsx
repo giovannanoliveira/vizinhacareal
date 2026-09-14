@@ -1,7 +1,21 @@
 import React from 'react';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  useCreatePremiumCheckout,
+  useGetPremiumStatus,
+} from '@workspace/api-client-react';
 import { useColors } from '@/hooks/useColors';
 import { BottomTabBar } from '@/components/BottomTabBar';
 
@@ -15,6 +29,23 @@ export default function PlansScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === 'web' ? 67 : insets.top;
+  const checkout = useCreatePremiumCheckout();
+  const premiumStatus = useGetPremiumStatus();
+  const isPremium = premiumStatus.data?.isPremium === true;
+
+  const handleCheckout = async () => {
+    if (isPremium) return;
+    try {
+      const session = await checkout.mutateAsync();
+      await WebBrowser.openBrowserAsync(session.url);
+      await premiumStatus.refetch();
+    } catch {
+      Alert.alert(
+        'Pagamento indisponível',
+        'Não foi possível abrir o checkout da Stripe. Tente novamente em instantes.',
+      );
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -52,7 +83,7 @@ export default function PlansScreen() {
                 Plano Premium
               </Text>
               <Text style={[styles.planDescription, { color: colors.primaryForeground }]}>
-                Pagamento único
+                {isPremium ? 'Plano ativo' : 'Pagamento único'}
               </Text>
             </View>
           </View>
@@ -78,27 +109,39 @@ export default function PlansScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Quero contratar o Plano Premium"
-            onPress={() =>
-              Alert.alert(
-                'Plano Premium',
-                'O checkout seguro da Stripe está sendo finalizado. Você poderá concluir a contratação por R$ 19,90 assim que estiver disponível.',
-              )
-            }
+            disabled={checkout.isPending || isPremium}
+            onPress={handleCheckout}
             style={({ pressed }) => [
               styles.cta,
-              { backgroundColor: colors.accent, opacity: pressed ? 0.82 : 1 },
+              {
+                backgroundColor: colors.accent,
+                opacity: pressed || checkout.isPending ? 0.72 : 1,
+              },
             ]}
           >
-            <Text style={[styles.ctaText, { color: colors.primary }]}>Quero contratar</Text>
-            <Feather name="arrow-right" size={18} color={colors.primary} />
+            {checkout.isPending ? (
+              <ActivityIndicator color={colors.primary} />
+            ) : (
+              <>
+                <Text style={[styles.ctaText, { color: colors.primary }]}>
+                  {isPremium ? 'Premium ativo' : 'Quero contratar'}
+                </Text>
+                <Feather
+                  name={isPremium ? 'check' : 'arrow-right'}
+                  size={18}
+                  color={colors.primary}
+                />
+              </>
+            )}
           </Pressable>
         </View>
 
         <View style={[styles.securityNote, { backgroundColor: colors.card }]}>
           <Feather name="shield" size={19} color={colors.secondary} />
           <Text style={[styles.securityText, { color: colors.mutedForeground }]}>
-            Pagamento processado com segurança pela Stripe. Você não precisa compartilhar seus
-            dados de cartão com o aplicativo.
+            {isPremium
+              ? 'Seu pagamento foi confirmado e o Plano Premium está ativo.'
+              : 'Pagamento processado com segurança pela Stripe. Você não precisa compartilhar seus dados de cartão com o aplicativo.'}
           </Text>
         </View>
       </ScrollView>
