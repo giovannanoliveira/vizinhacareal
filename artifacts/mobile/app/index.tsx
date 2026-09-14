@@ -17,6 +17,7 @@ import { useListImoveis } from '@workspace/api-client-react';
 import { useColors } from '@/hooks/useColors';
 import { Imovel, fuzzySearch } from '@/data/mock';
 import { SearchCard } from '@/components/SearchCard';
+import { BottomTabBar } from '@/components/BottomTabBar';
 import { useFavorites } from '@/contexts/FavoritesContext';
 
 const RECENTS_KEY = '@vizinhanca_recents';
@@ -220,7 +221,7 @@ export default function SearchScreen() {
           </Pressable>
         )}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-        contentContainerStyle={[styles.list, { paddingBottom: botPad + 104 }]}
+        contentContainerStyle={[styles.list, { paddingBottom: botPad + 168 }]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         scrollEnabled
@@ -232,7 +233,7 @@ export default function SearchScreen() {
         style={({ pressed }) => [
           styles.assistantButton,
           {
-            bottom: botPad + 18,
+            bottom: botPad + 88,
             backgroundColor: colors.primary,
             opacity: pressed ? 0.8 : 1,
           },
@@ -243,6 +244,7 @@ export default function SearchScreen() {
           Pergunte
         </Text>
       </Pressable>
+      <BottomTabBar activeTab="explorar" />
     </View>
   );
 }
