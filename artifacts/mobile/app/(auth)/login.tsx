@@ -77,10 +77,6 @@ export default function LoginScreen() {
         },
       ]}
     >
-      <Pressable style={styles.close} onPress={() => router.back()} hitSlop={12}>
-        <Feather name="x" size={22} color={colors.foreground} />
-      </Pressable>
-
       <View style={styles.content}>
         <View style={[styles.logo, { backgroundColor: colors.accent }]}>
           <Feather name="home" size={28} color={colors.primary} />
@@ -139,7 +135,6 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingHorizontal: 24 },
-  close: { alignSelf: 'flex-end', padding: 4 },
   content: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   logo: {
     width: 64,
