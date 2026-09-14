@@ -126,6 +126,35 @@ export interface AssistenteChatResponse {
   geradoPorIa: boolean;
 }
 
+export interface PremiumCheckoutResponse {
+  url: string;
+}
+
+export type PremiumStatusResponseStatus = typeof PremiumStatusResponseStatus[keyof typeof PremiumStatusResponseStatus];
+
+
+export const PremiumStatusResponseStatus = {
+  none: 'none',
+  open: 'open',
+  complete: 'complete',
+  expired: 'expired',
+} as const;
+
+export type PremiumStatusResponsePaymentStatus = typeof PremiumStatusResponsePaymentStatus[keyof typeof PremiumStatusResponsePaymentStatus];
+
+
+export const PremiumStatusResponsePaymentStatus = {
+  unpaid: 'unpaid',
+  paid: 'paid',
+  no_payment_required: 'no_payment_required',
+} as const;
+
+export interface PremiumStatusResponse {
+  status: PremiumStatusResponseStatus;
+  paymentStatus: PremiumStatusResponsePaymentStatus;
+  isPremium: boolean;
+}
+
 export interface Imovel {
   id: number;
   nome: string;

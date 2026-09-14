@@ -20,6 +20,8 @@ tags:
     description: Property comparison operations
   - name: assistente
     description: AI assistant operations
+  - name: stripe
+    description: Premium payment operations
 paths:
   /healthz:
     get:
@@ -243,6 +245,48 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorMessage"
+  /stripe/checkout:
+    post:
+      operationId: createPremiumCheckout
+      tags: [stripe]
+      summary: Create an authenticated Stripe Checkout for the Premium plan
+      responses:
+        "200":
+          description: Checkout created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PremiumCheckoutResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
+        "502":
+          description: Stripe unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
+  /stripe/status:
+    get:
+      operationId: getPremiumStatus
+      tags: [stripe]
+      summary: Get the authenticated user's latest Premium payment status
+      responses:
+        "200":
+          description: Premium payment status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PremiumStatusResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorMessage"
 components:
   schemas:
     HealthStatus:
@@ -426,6 +470,24 @@ components:
         geradoPorIa:
           type: boolean
       required: [resposta, geradoPorIa]
+    PremiumCheckoutResponse:
+      type: object
+      properties:
+        url:
+          type: string
+      required: [url]
+    PremiumStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [none, open, complete, expired]
+        paymentStatus:
+          type: string
+          enum: [unpaid, paid, no_payment_required]
+        isPremium:
+          type: boolean
+      required: [status, paymentStatus, isPremium]
     Imovel:
       type: object
       properties:

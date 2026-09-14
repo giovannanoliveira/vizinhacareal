@@ -32,6 +32,8 @@ import type {
   Imovel,
   ListAvaliacoesParams,
   LoginInput,
+  PremiumCheckoutResponse,
+  PremiumStatusResponse,
   RegisterInput,
   Usuario
 } from './api.schemas';
@@ -882,3 +884,144 @@ export const useChatComAssistente = <TError = ErrorType<ApiErrorMessage>,
       return useMutation(getChatComAssistenteMutationOptions(options));
     }
 
+export const getCreatePremiumCheckoutUrl = () => {
+
+
+
+
+  return `/api/stripe/checkout`
+}
+
+/**
+ * @summary Create an authenticated Stripe Checkout for the Premium plan
+ */
+export const createPremiumCheckout = async ( options?: Parameters<typeof customFetch>[1]): Promise<PremiumCheckoutResponse> => {
+
+  return customFetch<PremiumCheckoutResponse>(getCreatePremiumCheckoutUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getCreatePremiumCheckoutMutationOptions = <TError = ErrorType<ApiErrorMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPremiumCheckout>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPremiumCheckout>>, TError,void, TContext> => {
+
+const mutationKey = ['createPremiumCheckout'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPremiumCheckout>>, void> = () => {
+
+
+          return  createPremiumCheckout(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePremiumCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof createPremiumCheckout>>>
+
+    export type CreatePremiumCheckoutMutationError = ErrorType<ApiErrorMessage>
+
+    /**
+ * @summary Create an authenticated Stripe Checkout for the Premium plan
+ */
+export const useCreatePremiumCheckout = <TError = ErrorType<ApiErrorMessage>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPremiumCheckout>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPremiumCheckout>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getCreatePremiumCheckoutMutationOptions(options));
+    }
+
+export const getGetPremiumStatusUrl = () => {
+
+
+
+
+  return `/api/stripe/status`
+}
+
+/**
+ * @summary Get the authenticated user's latest Premium payment status
+ */
+export const getPremiumStatus = async ( options?: Parameters<typeof customFetch>[1]): Promise<PremiumStatusResponse> => {
+
+  return customFetch<PremiumStatusResponse>(getGetPremiumStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPremiumStatusQueryKey = () => {
+    return [
+    `/api/stripe/status`
+    ] as const;
+    }
+
+
+export const getGetPremiumStatusQueryOptions = <TData = Awaited<ReturnType<typeof getPremiumStatus>>, TError = ErrorType<ApiErrorMessage>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPremiumStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPremiumStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPremiumStatus>>> = ({ signal }) => getPremiumStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPremiumStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPremiumStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getPremiumStatus>>>
+export type GetPremiumStatusQueryError = ErrorType<ApiErrorMessage>
+
+
+/**
+ * @summary Get the authenticated user's latest Premium payment status
+ */
+
+export function useGetPremiumStatus<TData = Awaited<ReturnType<typeof getPremiumStatus>>, TError = ErrorType<ApiErrorMessage>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPremiumStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPremiumStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}

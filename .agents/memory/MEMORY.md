@@ -1,3 +1,4 @@
 - [Orval/zod codegen compatibility](orval-zod-compat.md) — avoid `type: integer` and `format: email` in openapi.yaml; orval emits zod-v4 calls that fail v3 typecheck.
 - [OpenAI provider choice](openai-provider-choice.md) — use the user's own OpenAI key through Replit Secrets and keep all model calls server-side.
 - [Google authentication](google-authentication.md) — use Replit-managed Clerk with Google OAuth and bridge verified identities to local review authors.
+- [Stripe connector credentials](stripe-connector-credentials.md) — use the Replit connector proxy; this Stripe connection intentionally does not expose a secret key to app processes.
