@@ -18,7 +18,9 @@
     },
     "android": {},
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/icon.png",
+      "name": "Vizinhança Real — Avaliações reais de aluguel antes de você assinar",
+      "description": "Vizinhança Real reúne avaliações reais de apartamento, condomínio, proprietário e imobiliária feitas por quem já morou lá. Descubra como é morar ali antes de assinar o contrato de aluguel."
     },
     "plugins": [
       [

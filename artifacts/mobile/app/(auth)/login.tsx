@@ -74,8 +74,12 @@ export default function LoginScreen() {
           <Feather name="home" size={28} color={colors.primary} />
         </View>
         <Text style={[styles.wordmark, { color: colors.primary }]}>Vizinhança Real</Text>
-        <Text style={[styles.title, { color: colors.foreground }]}>
-          Entre para compartilhar sua experiência
+        <Text
+          accessibilityRole="header"
+          aria-level={1}
+          style={[styles.title, { color: colors.foreground }]}
+        >
+          Descubra como é realmente morar ali antes de assinar
         </Text>
         <Text style={[styles.description, { color: colors.mutedForeground }]}>
           Avalie imóveis onde você já morou e ajude outras pessoas a decidir com mais segurança.
